@@ -1,0 +1,1563 @@
+/* ===================================================================
+   🎮 VEERAKUMAR V - 8-BIT RETRO VIDEO GAME PORTFOLIO
+   High-Contrast Monochrome / 1-Bit Retro Arcade Design System
+   =================================================================== */
+
+/* -------------------------------------------------------------------
+   1. CSS VARIABLES & THEMES (DARK ARCADE & LIGHT GAMEBOY)
+   ------------------------------------------------------------------- */
+:root {
+  /* Fonts */
+  --font-arcade: 'Press Start 2P', monospace, sans-serif;
+  --font-pixel: 'Silkscreen', monospace, sans-serif;
+  --font-terminal: 'VT323', monospace, monospace;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+
+  /* Layout */
+  --container-max: 1100px;
+  --hud-height: 64px;
+}
+
+/* DARK MODE (Default: Retro 1-Bit Arcade Screen) */
+[data-theme="dark"] {
+  --bg-canvas: #09090b;
+  --bg-pattern: #000000;
+  --bg-card: #121215;
+  --bg-card-hover: #1a1a20;
+  --bg-input: #000000;
+  --border-color: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e2e2;
+  --text-muted: #9e9e9e;
+  --accent-solid: #ffffff;
+  --accent-inv: #000000;
+  --pixel-shadow: 4px 4px 0px #ffffff;
+  --pixel-shadow-sm: 2px 2px 0px #ffffff;
+  --pixel-shadow-lg: 6px 6px 0px #ffffff;
+  --pixel-shadow-inset: inset 2px 2px 0px #ffffff;
+  --grid-line-color: rgba(255, 255, 255, 0.06);
+  --crt-scanline-color: rgba(255, 255, 255, 0.04);
+  --badge-bg: #222222;
+  --dither-color: #ffffff;
+}
+
+/* LIGHT MODE (Retro Game Boy Pocket / Macintosh 1-Bit Paper) */
+[data-theme="light"] {
+  --bg-canvas: #f4f4f2;
+  --bg-pattern: #ebebe8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9f9f7;
+  --bg-input: #ffffff;
+  --border-color: #000000;
+  --text-primary: #000000;
+  --text-secondary: #222222;
+  --text-muted: #555555;
+  --accent-solid: #000000;
+  --accent-inv: #ffffff;
+  --pixel-shadow: 4px 4px 0px #000000;
+  --pixel-shadow-sm: 2px 2px 0px #000000;
+  --pixel-shadow-lg: 6px 6px 0px #000000;
+  --pixel-shadow-inset: inset 2px 2px 0px #000000;
+  --grid-line-color: rgba(0, 0, 0, 0.06);
+  --crt-scanline-color: rgba(0, 0, 0, 0.04);
+  --badge-bg: #dddddd;
+  --dither-color: #000000;
+}
+
+/* -------------------------------------------------------------------
+   2. GLOBAL RESETS & RETRO BASE STYLES
+   ------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  background-color: var(--bg-canvas);
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-pixel);
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  /* Retro 90s Dither / Grid background pattern */
+  background-image: 
+    linear-gradient(var(--grid-line-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Custom Pixel Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+  border-left: 2px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border: 2px solid var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  image-rendering: pixelated;
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
+
+/* -------------------------------------------------------------------
+   3. CRT SCANLINES & SCREEN VIGNETTE
+   ------------------------------------------------------------------- */
+.crt-lines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--crt-scanline-color) 0px,
+    var(--crt-scanline-color) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  opacity: 1;
+  transition: opacity var(--transition-normal);
+}
+
+.crt-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4);
+}
+
+body:not(.crt-enabled) .crt-lines,
+body:not(.crt-enabled) .crt-glow {
+  opacity: 0;
+  display: none;
+}
+
+/* -------------------------------------------------------------------
+   4. RETRO PIXEL UTILITIES & BOXES
+   ------------------------------------------------------------------- */
+.pixel-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  width: 100%;
+}
+
+/* The signature 90s stepped pixel border box */
+.pixel-box {
+  background-color: var(--bg-card);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--pixel-shadow);
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-normal);
+}
+
+/* Retro Clickable Buttons */
+.pixel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  padding: 0.75rem 1.1rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--pixel-shadow);
+  text-transform: uppercase;
+  user-select: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.pixel-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--pixel-shadow-lg);
+  background-color: var(--bg-card-hover);
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--pixel-shadow-sm);
+}
+
+.pixel-btn.primary-btn {
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+  font-weight: bold;
+}
+
+.pixel-btn.primary-btn:hover {
+  background-color: var(--text-secondary);
+}
+
+/* Pixel Badges */
+.pixel-badge {
+  display: inline-block;
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--badge-bg);
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.pixel-tag {
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+/* -------------------------------------------------------------------
+   5. TOP RETRO ARCADE HUD (HEADER)
+   ------------------------------------------------------------------- */
+.retro-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: var(--bg-canvas);
+  border-bottom: 3px solid var(--border-color);
+  box-shadow: 0 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.hud-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hud-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: var(--font-arcade);
+}
+
+.hud-label {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.hud-val {
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.hud-coin-item {
+  cursor: pointer;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px dashed var(--border-color);
+  user-select: none;
+  transition: transform var(--transition-fast);
+}
+
+.hud-coin-item:hover {
+  transform: scale(1.08);
+  background-color: var(--bg-card);
+}
+
+.coin-sprite {
+  display: inline-block;
+  animation: coin-bounce 1.6s ease-in-out infinite;
+}
+
+/* HUD Button Controls */
+.hud-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  padding: 0.4rem 0.65rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--pixel-shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  white-space: nowrap;
+}
+
+.hud-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--pixel-shadow);
+  background-color: var(--bg-card-hover);
+}
+
+.hud-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+/* Top Progress Scroll Bar */
+.hud-progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.hud-progress-bar {
+  height: 100%;
+  background-color: var(--accent-solid);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* -------------------------------------------------------------------
+   6. MOBILE QUICK NAVIGATION DRAWER
+   ------------------------------------------------------------------- */
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--bg-canvas);
+  z-index: 2000;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform: translateY(-100%);
+  transition: transform var(--transition-normal);
+  border-bottom: 4px solid var(--border-color);
+}
+
+.mobile-nav-drawer.active {
+  transform: translateY(0);
+}
+
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.pixel-btn-close {
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.mobile-nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+
+.mobile-nav-link {
+  font-family: var(--font-arcade);
+  font-size: 1rem;
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 3px solid var(--border-color);
+  box-shadow: var(--pixel-shadow-sm);
+  background-color: var(--bg-card);
+}
+
+.mobile-nav-link:hover, .mobile-nav-link:active {
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+}
+
+.mobile-nav-footer {
+  text-align: center;
+  border-top: 2px dashed var(--border-color);
+  padding-top: 1rem;
+}
+
+.pixel-micro-text {
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------------------
+   7. MAIN VIEWPORT & SECTION STRUCTURE
+   ------------------------------------------------------------------- */
+.game-viewport {
+  padding-top: calc(var(--hud-height) + 1.5rem);
+  padding-bottom: 5rem;
+}
+
+.game-section {
+  padding: 3.5rem 0;
+  position: relative;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.section-tag {
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  display: inline-block;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-family: var(--font-arcade);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  letter-spacing: 1px;
+  line-height: 1.3;
+}
+
+.section-subtitle {
+  font-family: var(--font-terminal);
+  font-size: 1.35rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* -------------------------------------------------------------------
+   8. HERO / TITLE SCREEN (STAGE 0)
+   ------------------------------------------------------------------- */
+.hero-card {
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-top-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.hero-greeting {
+  font-family: var(--font-arcade);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.hero-name {
+  font-family: var(--font-arcade);
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.hero-role {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  color: var(--text-secondary);
+}
+
+/* 8-bit Dialogue Box */
+.dialogue-box {
+  background-color: var(--bg-canvas);
+  padding: 1.5rem;
+  margin: 1.5rem auto 2.5rem auto;
+  max-width: 800px;
+  text-align: left;
+  border-left: 6px solid var(--border-color);
+  position: relative;
+}
+
+.dialogue-speaker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.dialogue-text {
+  font-family: var(--font-terminal);
+  font-size: 1.45rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.dialogue-blinker {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  animation: retro-blink 1s infinite;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-bottom-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px dashed var(--border-color);
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.status-indicator {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+/* -------------------------------------------------------------------
+   9. ABOUT ME & CHARACTER PROFILE
+   ------------------------------------------------------------------- */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.about-card-left, .about-card-right {
+  padding: 1.75rem;
+}
+
+/* Photo Frame */
+.photo-frame-wrapper {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.photo-frame {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 1rem auto;
+  padding: 6px;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-canvas);
+}
+
+.player-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) contrast(140%);
+  image-rendering: pixelated;
+  transition: filter var(--transition-normal);
+}
+
+.photo-scanline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.25) 2px,
+    rgba(0, 0, 0, 0.25) 4px
+  );
+  pointer-events: none;
+}
+
+.photo-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+/* RPG Character Sheet Table */
+.character-sheet {
+  border-top: 2px dashed var(--border-color);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sheet-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  gap: 0.5rem;
+}
+
+.sheet-label {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.sheet-val {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Story and Stats Box */
+.box-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.box-title h3 {
+  font-family: var(--font-arcade);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.story-paragraphs p {
+  font-family: var(--font-terminal);
+  font-size: 1.4rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.stats-box {
+  margin-top: 1.75rem;
+  border-top: 2px dashed var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+}
+
+.stat-bar-track {
+  width: 100%;
+  height: 14px;
+  background-color: var(--bg-canvas);
+  border: 2px solid var(--border-color);
+  padding: 2px;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background-color: var(--accent-solid);
+  width: 0%;
+  transition: width 1.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border-color);
+}
+
+/* -------------------------------------------------------------------
+   10. SKILLS AS POWER-UPS (INVENTORY & BUFFS)
+   ------------------------------------------------------------------- */
+.powerups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.powerup-category-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.powerup-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.powerup-cat-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.powerup-cat-title {
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+.powerup-cat-desc {
+  font-family: var(--font-terminal);
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  min-height: 3.5rem;
+}
+
+/* Power-Up Interactive Items */
+.powerup-items-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: auto;
+}
+
+.powerup-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.65rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  text-align: left;
+}
+
+.powerup-item-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px var(--border-color);
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+}
+
+.powerup-item-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-level-tag {
+  font-family: var(--font-arcade);
+  font-size: 0.55rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid currentColor;
+}
+
+/* Power-Up Toast */
+.powerup-toast {
+  margin: 2rem auto 0 auto;
+  max-width: 600px;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  text-align: center;
+  background-color: var(--bg-card);
+}
+
+/* -------------------------------------------------------------------
+   11. PROJECTS AS LEVELS (WORLD MAP)
+   ------------------------------------------------------------------- */
+.level-select-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.level-tab-btn {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  padding: 0.5rem 0.85rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.level-tab-btn.active, .level-tab-btn:hover {
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+}
+
+.levels-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* Individual Level Stage Card */
+.level-card {
+  padding: 2rem;
+  position: relative;
+}
+
+.level-card.featured-boss {
+  border-width: 4px;
+}
+
+.level-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.level-world-badge {
+  font-family: var(--font-arcade);
+  font-size: 0.85rem;
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+  padding: 0.4rem 0.8rem;
+  font-weight: bold;
+}
+
+.level-score-badge {
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.level-title-group {
+  margin-bottom: 1rem;
+}
+
+.level-title {
+  font-family: var(--font-arcade);
+  font-size: 1.3rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.3;
+}
+
+.level-genre {
+  font-family: var(--font-pixel);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: bold;
+}
+
+.level-summary {
+  font-family: var(--font-terminal);
+  font-size: 1.4rem;
+  line-height: 1.4;
+  margin-bottom: 1.25rem;
+}
+
+/* Mission Objectives / Highlights */
+.level-highlights-box {
+  background-color: var(--bg-canvas);
+  border: 2px dashed var(--border-color);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.highlights-title {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-muted);
+}
+
+.highlights-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.highlight-item {
+  font-family: var(--font-terminal);
+  font-size: 1.35rem;
+  line-height: 1.3;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.highlight-bullet {
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+/* Tech Stack Power-Ups */
+.level-tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.tech-chip {
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  padding: 0.35rem 0.65rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
+}
+
+/* Action Links */
+.level-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-top: 2px solid var(--border-color);
+  padding-top: 1.25rem;
+}
+
+/* -------------------------------------------------------------------
+   12. QUEST LOG (TIMELINE)
+   ------------------------------------------------------------------- */
+.quest-log-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  position: relative;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.quest-item {
+  padding: 1.75rem;
+  position: relative;
+}
+
+.quest-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.quest-period {
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.quest-title {
+  font-family: var(--font-arcade);
+  font-size: 1.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.quest-guild {
+  font-family: var(--font-pixel);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.quest-desc {
+  font-family: var(--font-terminal);
+  font-size: 1.35rem;
+  line-height: 1.4;
+}
+
+/* -------------------------------------------------------------------
+   13. FINAL BOSS / CONTACT SCREEN
+   ------------------------------------------------------------------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.contact-terminal {
+  padding: 1.75rem;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--border-color);
+  background-color: var(--accent-solid);
+  display: inline-block;
+}
+
+.terminal-title {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  margin-left: 0.5rem;
+}
+
+.terminal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pixel-label {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+}
+
+.prompt-arrow {
+  color: var(--text-muted);
+}
+
+.pixel-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background-color: var(--bg-input);
+  border: 3px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-terminal);
+  font-size: 1.4rem;
+  box-shadow: var(--pixel-shadow-inset);
+  outline: none;
+}
+
+.pixel-input:focus {
+  border-color: var(--accent-solid);
+  background-color: var(--bg-card);
+}
+
+.pixel-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-status {
+  padding: 1rem;
+  font-family: var(--font-arcade);
+  font-size: 0.7rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Contact Info Panel */
+.contact-info-panel {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.direct-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.channel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.channel-label {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.channel-val {
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.socials-box {
+  border-top: 2px dashed var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.socials-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.social-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-canvas);
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.social-link-btn:hover {
+  transform: translate(-2px, -2px);
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+}
+
+.easter-egg-hint {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  background-color: var(--bg-canvas);
+  border: 2px dashed var(--border-color);
+}
+
+.hint-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.hint-text {
+  font-family: var(--font-arcade);
+  font-size: 0.6rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------------------
+   14. VIRTUAL RETRO GAME CONTROLLER (MOBILE & DESKTOP)
+   ------------------------------------------------------------------- */
+.virtual-controller {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  user-select: none;
+}
+
+.controller-toggle-bar {
+  margin-bottom: 0.35rem;
+}
+
+.controller-toggle-btn {
+  font-family: var(--font-arcade);
+  font-size: 0.55rem;
+  padding: 0.35rem 0.6rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.controller-body {
+  background-color: var(--bg-card);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--pixel-shadow);
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+.virtual-controller.collapsed .controller-body {
+  display: none;
+}
+
+/* D-Pad */
+.dpad-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dpad-middle-row {
+  display: flex;
+  align-items: center;
+}
+
+.dpad-btn {
+  width: 34px;
+  height: 34px;
+  background-color: var(--bg-canvas);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+.dpad-btn:active {
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+  transform: translate(1px, 1px);
+}
+
+.dpad-center {
+  width: 34px;
+  height: 34px;
+  background-color: var(--bg-canvas);
+  border: 2px solid var(--border-color);
+}
+
+/* Action A/B Buttons */
+.action-buttons-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.action-btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--border-color);
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.action-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.btn-subtext {
+  font-family: var(--font-arcade);
+  font-size: 0.5rem;
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------------------
+   15. RETRO FOOTER
+   ------------------------------------------------------------------- */
+.retro-footer {
+  border-top: 3px solid var(--border-color);
+  background-color: var(--bg-card);
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.footer-text {
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+}
+
+.footer-subtext {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  margin-top: 1rem;
+}
+
+.footer-link {
+  font-family: var(--font-arcade);
+  font-size: 0.65rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-canvas);
+  display: inline-block;
+}
+
+.footer-link:hover {
+  background-color: var(--accent-solid);
+  color: var(--accent-inv);
+}
+
+/* -------------------------------------------------------------------
+   16. FLOATING PIXEL PARTICLES & TOAST NOTIFICATION
+   ------------------------------------------------------------------- */
+.particles-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9990;
+}
+
+.pixel-particle {
+  position: absolute;
+  font-family: var(--font-arcade);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  padding: 0.35rem 0.65rem;
+  box-shadow: 3px 3px 0px var(--border-color);
+  animation: float-and-fade 1.2s forwards ease-out;
+}
+
+/* -------------------------------------------------------------------
+   17. SCROLL ANIMATIONS & KEYFRAMES
+   ------------------------------------------------------------------- */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes retro-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.blink {
+  animation: retro-blink 1.2s infinite;
+}
+
+@keyframes coin-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(15deg); }
+}
+
+@keyframes float-and-fade {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) scale(1.1);
+  }
+}
+
+/* -------------------------------------------------------------------
+   18. RESPONSIVE DESIGN (MOBILE-FRIENDLY & TOUCH DEVICES)
+   ------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .about-grid, .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .hud-time-item {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --hud-height: 58px;
+  }
+
+  .hud-group.hud-controls .hud-btn .btn-text {
+    display: none;
+  }
+
+  .hud-btn {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .hud-group.hud-progress {
+    gap: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .hero-card {
+    padding: 1.75rem 1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions .pixel-btn {
+    width: 100%;
+  }
+
+  .level-card {
+    padding: 1.25rem;
+  }
+
+  .powerups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .virtual-controller {
+    bottom: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hud-player .hud-val {
+    font-size: 0.65rem;
+  }
+
+  .hud-player .hud-label {
+    font-size: 0.5rem;
+  }
+
+  .hud-progress {
+    display: none;
+  }
+
+  .photo-frame {
+    width: 160px;
+    height: 160px;
+  }
+
+  .story-paragraphs p {
+    font-size: 1.2rem;
+  }
+}

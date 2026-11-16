@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Veerakumar V | 8-Bit Retro Game Portfolio</title>
+  <meta name="description" content="Retro video game portfolio of Veerakumar V - Full Stack Software Engineer. Projects as levels, skills as power-ups.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  
+  <!-- Retro Pixel Fonts from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="crt-enabled">
+
+  <!-- ========================================== -->
+  <!-- 📺 RETRO CRT SCANLINE & FLICKER OVERLAY   -->
+  <!-- ========================================== -->
+  <div class="crt-lines" aria-hidden="true"></div>
+  <div class="crt-glow" aria-hidden="true"></div>
+
+  <!-- ========================================== -->
+  <!-- 🕹️ TOP RETRO ARCADE HUD (FIXED HEADER)     -->
+  <!-- ========================================== -->
+  <header class="retro-hud" id="retro-hud">
+    <div class="hud-container">
+      
+      <!-- Left: Player 1 & Score -->
+      <div class="hud-group hud-player">
+        <div class="hud-item hud-blink-text">
+          <span class="hud-label">1UP</span>
+          <span class="hud-val" id="hud-player-name">VEERAKUMAR V</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-val" id="hud-score">015400</span>
+        </div>
+      </div>
+
+      <!-- Center: Coins & World -->
+      <div class="hud-group hud-progress">
+        <div class="hud-item hud-coin-item" title="Click to collect coins!">
+          <span class="hud-icon coin-sprite" id="hud-coin-btn">🪙</span>
+          <span class="hud-val">x<span id="hud-coins">05</span></span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">WORLD</span>
+          <span class="hud-val" id="hud-world">1-1</span>
+        </div>
+        <div class="hud-item hud-time-item">
+          <span class="hud-label">TIME</span>
+          <span class="hud-val" id="hud-timer">399</span>
+        </div>
+      </div>
+
+      <!-- Right: Controls & Toggles -->
+      <div class="hud-group hud-controls">
+        <!-- Sound Effect Toggle -->
+        <button id="toggle-sound" class="hud-btn" title="Toggle 8-bit sound effects" aria-label="Toggle Sound">
+          <span class="btn-icon">🔇</span>
+          <span class="btn-text">SOUND: <span id="sound-state-text">OFF</span></span>
+        </button>
+
+        <!-- CRT Scanline Toggle -->
+        <button id="toggle-crt" class="hud-btn" title="Toggle CRT scanline filter" aria-label="Toggle CRT Filter">
+          <span class="btn-icon">📺</span>
+          <span class="btn-text">CRT: <span id="crt-state-text">ON</span></span>
+        </button>
+
+        <!-- Light / Dark Mode Toggle Switch -->
+        <button id="toggle-theme" class="hud-btn theme-toggle-btn" title="Switch Light / Dark palette" aria-label="Toggle Theme">
+          <span class="btn-icon" id="theme-icon">☀️</span>
+          <span class="btn-text">MODE: <span id="theme-state-text">DARK</span></span>
+        </button>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-menu-toggle" class="hud-btn mobile-menu-btn" aria-label="Open Navigation Menu">
+          <span>[MENU]</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Retro Progress Bar -->
+    <div class="hud-progress-bar-container">
+      <div class="hud-progress-bar" id="scroll-progress-bar" style="width: 0%;"></div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 📱 MOBILE QUICK NAVIGATION DRAWER         -->
+  <!-- ========================================== -->
+  <nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true">
+    <div class="mobile-nav-header">
+      <span class="pixel-tag">PAUSE MENU</span>
+      <button class="pixel-btn-close" id="mobile-menu-close">✕ CLOSE</button>
+    </div>
+    <ul class="mobile-nav-links">
+      <li><a href="#hero-screen" class="mobile-nav-link">▶ TITLE SCREEN</a></li>
+      <li><a href="#about-screen" class="mobile-nav-link">▶ PLAYER BIO & STATS</a></li>
+      <li><a href="#powerups-screen" class="mobile-nav-link">🍄 POWER-UPS (SKILLS)</a></li>
+      <li><a href="#levels-screen" class="mobile-nav-link">🏰 LEVELS (PROJECTS)</a></li>
+      <li><a href="#quests-screen" class="mobile-nav-link">📜 QUEST LOG (EXPERIENCE)</a></li>
+      <li><a href="#contact-screen" class="mobile-nav-link">📬 BOSS STAGE (CONTACT)</a></li>
+    </ul>
+    <div class="mobile-nav-footer">
+      <p class="pixel-micro-text">PRESS ANY LINK TO WARP</p>
+    </div>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- 🕹️ MAIN GAME CONTAINER                    -->
+  <!-- ========================================== -->
+  <main class="game-viewport">
+
+    <!-- ---------------------------------------- -->
+    <!-- 1. HERO / TITLE SCREEN (STAGE 0)         -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section hero-section" id="hero-screen">
+      <div class="pixel-container">
+        
+        <div class="arcade-card hero-card pixel-box scroll-reveal">
+          
+          <div class="hero-top-badges">
+            <span class="pixel-badge">CREDIT 01</span>
+            <span class="pixel-badge blink">INSERT COIN TO START</span>
+            <span class="pixel-badge" id="hero-level-badge">LVL 99 DEVELOPER</span>
+          </div>
+
+          <div class="hero-title-group">
+            <p class="hero-greeting">★ RETRO ARCADE EDITION ★</p>
+            <h1 class="hero-name" id="hero-name">VEERAKUMAR V</h1>
+            <p class="hero-role" id="hero-role">FULL STACK SOFTWARE ENGINEER</p>
+          </div>
+
+          <!-- Retro 8-bit Dialogue Box -->
+          <div class="dialogue-box pixel-box">
+            <div class="dialogue-speaker">
+              <span class="dialogue-avatar-mini">👾</span>
+              <span class="speaker-name">SYSTEM TRANSMISSION:</span>
+            </div>
+            <p class="dialogue-text" id="hero-dialogue-text">
+              "IT'S DANGEROUS TO BUILD MODERN APPS ALONE! TAKE MY HIGH-PERFORMANCE CODE, CLEAN ARCHITECTURE, AND PROBLEM-SOLVING MASTERY."
+            </p>
+            <span class="dialogue-blinker">▼</span>
+          </div>
+
+          <!-- Hero Action Buttons -->
+          <div class="hero-actions">
+            <a href="#levels-screen" class="pixel-btn primary-btn btn-click-fx">
+              <span class="btn-arrow">▶</span> START GAME (PROJECTS)
+            </a>
+            <a href="#powerups-screen" class="pixel-btn btn-click-fx">
+              <span>🍄</span> POWER-UPS (SKILLS)
+            </a>
+            <a href="#about-screen" class="pixel-btn btn-click-fx">
+              <span>👤</span> PLAYER BIO
+            </a>
+            <a href="#contact-screen" class="pixel-btn btn-click-fx">
+              <span>📬</span> WARP TO CONTACT
+            </a>
+          </div>
+
+          <div class="hero-bottom-status">
+            <span class="status-indicator">● ONLINE</span>
+            <span id="hero-availability">READY FOR NEW QUESTS (AVAILABLE FOR HIRE)</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- 2. ABOUT ME & PLAYER STATS               -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section about-section" id="about-screen">
+      <div class="pixel-container">
+        
+        <div class="section-header scroll-reveal">
+          <span class="section-tag">[CHARACTER PROFILE]</span>
+          <h2 class="section-title">PLAYER 1: ABOUT ME</h2>
+          <p class="section-subtitle">Character sheet, background lore, and core attributes.</p>
+        </div>
+
+        <div class="about-grid">
+          
+          <!-- Left: Photo Frame & RPG Attributes -->
+          <div class="about-card-left pixel-box scroll-reveal">
+            
+            <div class="photo-frame-wrapper">
+              <div class="photo-frame pixel-box">
+                <img id="player-photo" src="assets/avatar.svg" alt="Veerakumar V Photo" class="player-photo-img">
+                <div class="photo-scanline-overlay"></div>
+              </div>
+              <div class="photo-caption">
+                <span class="photo-tag">PLAYER_01.DAT</span>
+                <span class="pixel-caption-text" id="photo-status">STATUS: ONLINE</span>
+              </div>
+            </div>
+
+            <!-- RPG Character Info Sheet -->
+            <div class="character-sheet">
+              <div class="sheet-row">
+                <span class="sheet-label">NAME:</span>
+                <span class="sheet-val" id="sheet-name">Veerakumar V</span>
+              </div>
+              <div class="sheet-row">
+                <span class="sheet-label">CLASS:</span>
+                <span class="sheet-val" id="sheet-class">Code Alchemist</span>
+              </div>
+              <div class="sheet-row">
+                <span class="sheet-label">LEVEL:</span>
+                <span class="sheet-val" id="sheet-level">99 (MAX)</span>
+              </div>
+              <div class="sheet-row">
+                <span class="sheet-label">HP / MP:</span>
+                <span class="sheet-val" id="sheet-hp-mp">100/100 | 999/999</span>
+              </div>
+              <div class="sheet-row">
+                <span class="sheet-label">ALIGNMENT:</span>
+                <span class="sheet-val" id="sheet-alignment">Chaotic Clean Code</span>
+              </div>
+              <div class="sheet-row">
+                <span class="sheet-label">LOCATION:</span>
+                <span class="sheet-val" id="sheet-location">Earth (Remote / On-site)</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Bio Story & RPG Stats Bars -->
+          <div class="about-card-right pixel-box scroll-reveal">
+            
+            <div class="story-box">
+              <div class="box-title">
+                <span class="box-icon">📜</span>
+                <h3>ORIGIN STORY & QUEST</h3>
+              </div>
+              <div class="story-paragraphs" id="about-bio-container">
+                <!-- Populated dynamically from data.js -->
+              </div>
+            </div>
+
+            <!-- RPG Stat Progress Bars -->
+            <div class="stats-box">
+              <div class="box-title">
+                <span class="box-icon">⚡</span>
+                <h3>CHARACTER STATS</h3>
+              </div>
+              <div class="stats-list" id="about-stats-container">
+                <!-- Populated dynamically from data.js -->
+              </div>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div class="about-actions">
+              <a href="#levels-screen" class="pixel-btn btn-click-fx">
+                <span>🏰</span> EXPLORE COMPLETED LEVELS
+              </a>
+              <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer" class="pixel-btn btn-click-fx" id="resume-download-btn">
+                <span>📄</span> DOWNLOAD RESUME
+              </a>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- 3. SKILLS AS POWER-UPS (INVENTORY)       -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section powerups-section" id="powerups-screen">
+      <div class="pixel-container">
+        
+        <div class="section-header scroll-reveal">
+          <span class="section-tag">[INVENTORY & BUFFS]</span>
+          <h2 class="section-title">SKILLS AS POWER-UPS</h2>
+          <p class="section-subtitle">Click any power-up to collect points, trigger 8-bit sounds, and inspect abilities!</p>
+        </div>
+
+        <!-- Power-Ups Interactive Grid -->
+        <div class="powerups-grid" id="powerups-container">
+          <!-- Populated dynamically from data.js -->
+        </div>
+
+        <!-- Inventory Footer Notification -->
+        <div class="powerup-toast pixel-box" id="powerup-toast" aria-live="polite">
+          <span class="toast-icon">⭐</span>
+          <span class="toast-msg">CLICK A POWER-UP TO EQUIP!</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- 4. PROJECTS AS LEVELS (WORLD MAP)        -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section levels-section" id="levels-screen">
+      <div class="pixel-container">
+        
+        <div class="section-header scroll-reveal">
+          <span class="section-tag">[STAGE SELECT]</span>
+          <h2 class="section-title">PROJECTS AS LEVELS</h2>
+          <p class="section-subtitle">Conquered stages, cleared objectives, and defeated bosses.</p>
+        </div>
+
+        <!-- Fast Stage Navigation Tabs -->
+        <div class="level-select-tabs scroll-reveal" id="level-tabs-container">
+          <!-- Populated dynamically from data.js -->
+        </div>
+
+        <!-- Level Cards List -->
+        <div class="levels-container" id="levels-container">
+          <!-- Populated dynamically from data.js -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- 5. QUEST LOG (EXPERIENCE & EDUCATION)    -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section quests-section" id="quests-screen">
+      <div class="pixel-container">
+        
+        <div class="section-header scroll-reveal">
+          <span class="section-tag">[CAMPAIGN HISTORY]</span>
+          <h2 class="section-title">QUEST LOG & EXP</h2>
+          <p class="section-subtitle">Career milestones, professional guilds, and earned credentials.</p>
+        </div>
+
+        <div class="quest-log-timeline" id="quests-container">
+          <!-- Populated dynamically from data.js -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- 6. FINAL BOSS / CONTACT SCREEN           -->
+    <!-- ---------------------------------------- -->
+    <section class="game-section contact-section" id="contact-screen">
+      <div class="pixel-container">
+        
+        <div class="section-header scroll-reveal">
+          <span class="section-tag">[FINAL STAGE]</span>
+          <h2 class="section-title">TRANSMIT TO VEERAKUMAR V</h2>
+          <p class="section-subtitle">Ready to recruit for your company or contract quest? Send an urgent dispatch!</p>
+        </div>
+
+        <div class="contact-grid">
+          
+          <!-- Left: Retro Terminal Form -->
+          <div class="contact-terminal pixel-box scroll-reveal">
+            <div class="terminal-header">
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-title">TRANSMISSION_UPLINK.EXE</span>
+            </div>
+
+            <form class="terminal-form" id="contact-form">
+              
+              <div class="form-group">
+                <label for="sender-name" class="pixel-label">
+                  <span class="prompt-arrow">&gt;</span> SENDER CALLSIGN / NAME:
+                </label>
+                <input type="text" id="sender-name" name="name" required placeholder="e.g. Commander Shepard" class="pixel-input">
+              </div>
+
+              <div class="form-group">
+                <label for="sender-email" class="pixel-label">
+                  <span class="prompt-arrow">&gt;</span> RETURN FREQUENCY / EMAIL:
+                </label>
+                <input type="email" id="sender-email" name="email" required placeholder="e.g. recruit@enterprise.com" class="pixel-input">
+              </div>
+
+              <div class="form-group">
+                <label for="sender-message" class="pixel-label">
+                  <span class="prompt-arrow">&gt;</span> MISSION BRIEF / MESSAGE:
+                </label>
+                <textarea id="sender-message" name="message" rows="4" required placeholder="State your quest details, role, or proposal..." class="pixel-input pixel-textarea"></textarea>
+              </div>
+
+              <button type="submit" class="pixel-btn primary-btn btn-click-fx" id="contact-submit-btn">
+                <span>🚀</span> TRANSMIT DISPATCH [SEND]
+              </button>
+
+              <div class="form-status pixel-box" id="form-status" style="display: none;"></div>
+
+            </form>
+          </div>
+
+          <!-- Right: Frequencies, Direct Info, & Socials -->
+          <div class="contact-info-panel pixel-box scroll-reveal">
+            
+            <div class="box-title">
+              <span class="box-icon">📡</span>
+              <h3>DIRECT CHANNELS</h3>
+            </div>
+
+            <div class="direct-channels">
+              <div class="channel-item">
+                <span class="channel-label">EMAIL:</span>
+                <a href="mailto:veerakumar.v@example.com" id="contact-email-link" class="channel-val">veerakumar.v@example.com</a>
+              </div>
+              <div class="channel-item">
+                <span class="channel-label">LATENCY:</span>
+                <span class="channel-val" id="contact-latency">&lt; 24 HOURS</span>
+              </div>
+              <div class="channel-item">
+                <span class="channel-label">BASE:</span>
+                <span class="channel-val" id="contact-location">Bengaluru, India // Remote Worldwide</span>
+              </div>
+            </div>
+
+            <!-- Social Media Buttons -->
+            <div class="socials-box">
+              <div class="box-title">
+                <span class="box-icon">🌐</span>
+                <h3>COMMUNICATION BEACONS</h3>
+              </div>
+              <div class="socials-grid" id="contact-socials-container">
+                <!-- Populated dynamically from data.js -->
+              </div>
+            </div>
+
+            <!-- Konami Code Hint -->
+            <div class="easter-egg-hint pixel-box">
+              <span class="hint-icon">🕹️</span>
+              <p class="hint-text">PRO TIP: TRY THE KONAMI CODE ON YOUR KEYBOARD (↑ ↑ ↓ ↓ ← → ← → B A) OR TAP THE CONTROLLER BELOW!</p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 🕹️ VIRTUAL RETRO GAME CONTROLLER (MOBILE)   -->
+  <!-- ========================================== -->
+  <aside class="virtual-controller" id="virtual-controller" aria-label="Virtual Game Controller">
+    <div class="controller-toggle-bar">
+      <button class="controller-toggle-btn" id="controller-toggle-btn" title="Toggle Virtual Arcade Controller">
+        <span id="controller-toggle-text">🎮 CONTROLLER: HIDE</span>
+      </button>
+    </div>
+    
+    <div class="controller-body" id="controller-body">
+      <!-- D-Pad (Navigation) -->
+      <div class="dpad-container" aria-label="Directional Pad">
+        <button class="dpad-btn dpad-up" id="btn-dpad-up" aria-label="Scroll Up">▲</button>
+        <div class="dpad-middle-row">
+          <button class="dpad-btn dpad-left" id="btn-dpad-left" aria-label="Previous Level">◀</button>
+          <div class="dpad-center"></div>
+          <button class="dpad-btn dpad-right" id="btn-dpad-right" aria-label="Next Level">▶</button>
+        </div>
+        <button class="dpad-btn dpad-down" id="btn-dpad-down" aria-label="Scroll Down">▼</button>
+      </div>
+
+      <!-- Action Buttons (A & B) -->
+      <div class="action-buttons-container">
+        <div class="action-btn-wrapper">
+          <button class="action-btn btn-b" id="btn-arcade-b" aria-label="Action B: Mode Switch">B</button>
+          <span class="btn-subtext">THEME</span>
+        </div>
+        <div class="action-btn-wrapper">
+          <button class="action-btn btn-a" id="btn-arcade-a" aria-label="Action A: Jump / Coin">A</button>
+          <span class="btn-subtext">JUMP</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- 🏁 RETRO FOOTER                            -->
+  <!-- ========================================== -->
+  <footer class="retro-footer">
+    <div class="pixel-container">
+      <div class="footer-content">
+        <p class="footer-text">
+          GAME OVER? NO WAY! © <span id="footer-year">2026</span> <strong id="footer-name">VEERAKUMAR V</strong>.
+        </p>
+        <p class="footer-subtext">
+          CRAFTED WITH 1-BIT PASSION, CLEAN CODE, AND PIXEL PRIDE.
+        </p>
+        <div class="footer-links">
+          <a href="#hero-screen" class="footer-link">▲ BACK TO TOP (REPLAY)</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- 💥 FLOATING PIXEL NOTIFICATION OVERLAY     -->
+  <!-- ========================================== -->
+  <div id="pixel-particles-overlay" class="particles-overlay" aria-hidden="true"></div>
+
+  <!-- Data and Application Logic -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

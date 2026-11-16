@@ -1,0 +1,20 @@
+{
+  "name": "veerakumar-v-retro-portfolio",
+  "version": "1.0.0",
+  "description": "8-Bit Retro Video Game Portfolio for Veerakumar V",
+  "scripts": {
+    "start": "node serve.js",
+    "dev": "node serve.js"
+  },
+  "keywords": [
+    "portfolio",
+    "retro",
+    "8-bit",
+    "video-game",
+    "monochrome",
+    "black-and-white",
+    "pixel-art"
+  ],
+  "author": "Veerakumar V",
+  "license": "MIT"
+}
