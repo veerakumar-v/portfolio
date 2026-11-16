@@ -1,0 +1,15 @@
+name: Deploy to Embarko
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          tar -czf /tmp/app.tar.gz --exclude=node_modules --exclude=.git -C . .
+          curl -sS -X POST 'https://ship.embarko.ai/apps' \
+            -H "Authorization: Bearer ${{ secrets.EMBARKO_DEPLOY_TOKEN }}" \
+            -H 'X-App-Name: veerakumar-portfolio' \
+            -F 'source=@/tmp/app.tar.gz'
